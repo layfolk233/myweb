@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>随机笑话</title>
+  <link rel="stylesheet" href="../web-css/common.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh; background: #f5f7fa;
+      display: flex; justify-content: center; align-items: center; padding: 20px;
+    }
+    .card {
+      background: #fff; border-radius: 20px; padding: 40px;
+      box-shadow: 0 10px 40px rgba(0,0,0,.08); max-width: 560px; width: 100%;
+      text-align: center;
+    }
+    .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+    h1 { font-size: 22px; color: #333; }
+    .back { text-decoration: none; color: #667eea; font-size: 14px; }
+    .back:hover { text-decoration: underline; }
+    .joke-box {
+      min-height: 160px; display: flex; flex-direction: column;
+      justify-content: center; align-items: center; padding: 24px;
+      background: #fafafa; border-radius: 12px; margin-bottom: 20px;
+      border: 1px dashed #ddd; transition: border-color .3s;
+    }
+    .joke-box.loaded { border-color: #f5576c; border-style: solid; }
+    .setup { font-size: 18px; color: #333; margin-bottom: 12px; line-height: 1.6; }
+    .delivery { font-size: 16px; color: #f5576c; font-weight: 500; line-height: 1.5; }
+    .single { font-size: 18px; color: #333; line-height: 1.6; }
+    .category { margin-top: 10px; font-size: 12px; color: #999; }
+    .btn {
+      padding: 12px 32px; border: none; border-radius: 10px;
+      background: linear-gradient(135deg, #f093fb, #f5576c);
+      color: #fff; font-size: 15px; cursor: pointer; font-weight: 500;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245,87,108,.35); }
+    .btn:disabled { opacity: .6; cursor: not-allowed; transform: none; box-shadow: none; }
+    .loading { color: #999; font-size: 14px; }
+    .error { color: #e74c3c; font-size: 14px; }
+  </style>
+</head>
+<body data-nav-current="joke">
+  <div class="card">
+    <div class="top">
+      <h1>😂 随机笑话</h1>
+    </div>
+
+    <div class="joke-box" id="jokeBox">
+      <p class="loading">点击下方按钮获取随机笑话 🎯</p>
+    </div>
+
+    <button class="btn" id="fetchBtn">再来一个</button>
+  </div>
+
+  <script src="../web-js/nav.js"></script>
+  <script>
+    const jokeBox = document.getElementById('jokeBox');
+    const btn = document.getElementById('fetchBtn');
+
+    async function fetchJoke() {
+      btn.disabled = true;
+      btn.textContent = '加载中...';
+      jokeBox.innerHTML = '<p class="loading">🤔 正在想笑话……</p>';
+      jokeBox.className = 'joke-box';
+
+      try {
+        const res = await fetch('https://v2.jokeapi.dev/joke/Any?safe-mode');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        jokeBox.className = 'joke-box loaded';
+
+        if (data.type === 'single') {
+          // 单句式笑话
+          jokeBox.innerHTML = `
+            <p class="single">${data.joke}</p>
+            <p class="category">#${data.category}</p>
+          `;
+        } else if (data.type === 'twopart') {
+          // 双句式：setup + delivery
+          jokeBox.innerHTML = `
+            <p class="setup">${data.setup}</p>
+            <p class="delivery">💡 ${data.delivery}</p>
+            <p class="category">#${data.category}</p>
+          `;
+        }
+      } catch (err) {
+        jokeBox.innerHTML = `<p class="error">❌ 获取笑话失败：${err.message}</p>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '再来一个';
+      }
+    }
+
+    btn.addEventListener('click', fetchJoke);
+  </script>
+</body>
+</html>

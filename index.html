@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人站点 · 首页</title>
+  <link rel="stylesheet" href="web-css/common.css">
+  <style>
+    /* ========== 首页特有样式 ========== */
+    .hero {
+      text-align: center;
+      padding: 80px 24px 40px;
+      position: relative;
+    }
+    .hero__badge {
+      display: inline-block;
+      padding: 6px 18px;
+      background: rgba(224,122,95,0.1);
+      color: var(--color-primary);
+      border-radius: var(--radius-full);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      margin-bottom: 24px;
+    }
+    .hero__title {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--color-secondary);
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .hero__title span {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero__desc {
+      font-size: 1.15rem;
+      color: var(--color-text-light);
+      max-width: 520px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+
+    /* 卡片网格 */
+    .page-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      max-width: 1000px;
+      margin: 0 auto 80px;
+      padding: 0 24px;
+    }
+    .page-card {
+      background: var(--color-card);
+      border-radius: var(--radius-xl);
+      padding: 36px 28px 28px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-border);
+      text-decoration: none;
+      color: var(--color-text);
+      transition: all 0.4s var(--ease-out-expo);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+    }
+    .page-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      border-radius: 4px 4px 0 0;
+      background: var(--accent, var(--color-primary));
+      transition: height 0.3s var(--ease-out-expo);
+    }
+
+    .page-card:hover {
+      transform: translateY(-8px);
+      box-shadow: var(--shadow-lg);
+    }
+    .page-card:hover::before { height: 6px; }
+    .page-card__icon {
+      font-size: 3.5rem;
+      margin-bottom: 20px;
+      display: block;
+      transition: transform 0.4s var(--ease-spring);
+    }
+    .page-card:hover .page-card__icon {
+      transform: scale(1.15) rotate(-5deg);
+    }
+    .page-card__title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--color-secondary);
+      margin-bottom: 8px;
+    }
+    .page-card__desc {
+      font-size: 0.95rem;
+      color: var(--color-text-light);
+      line-height: 1.6;
+      flex: 1;
+    }
+    .page-card__arrow {
+      margin-top: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--color-primary);
+      transition: gap 0.3s var(--ease-out-expo);
+    }
+    .page-card:hover .page-card__arrow { gap: 12px; }
+
+    /* 装饰 */
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--color-border), transparent);
+    }
+    @media (max-width: 640px) {
+      .hero__title { font-size: 2rem; }
+      .hero { padding: 50px 16px 30px; }
+      .page-grid { grid-template-columns: 1fr; padding: 0 16px; }
+    }
+  </style>
+</head>
+<body data-nav-current="index">
+
+  <!-- ========== Hero ========== -->
+  <section class="hero">
+    <div class="hero__badge">✨ 个人站点</div>
+    <h1 class="hero__title">欢迎来到我的<span>小站</span></h1>
+    <p class="hero__desc">
+      这里收录了我喜欢的一些工具和作品，欢迎随意逛逛。
+    </p>
+  </section>
+
+  <!-- ========== 卡片导航 ========== -->
+  <div class="page-grid">
+
+    <!-- 网站橱窗 -->
+    <a href="showcase/" class="page-card fade-in" style="animation-delay: 0.1s; --accent: var(--color-primary)">
+      <span class="page-card__icon">🪟</span>
+      <h2 class="page-card__title">网站橱窗</h2>
+      <p class="page-card__desc">
+        收藏的优质网站，分类浏览，一键检测连通性。支持导入导出，方便管理。
+      </p>
+      <span class="page-card__arrow">去看看 →</span>
+    </a>
+
+    <!-- 留言广场 -->
+    <a href="guestbook/" class="page-card fade-in" style="animation-delay: 0.2s; --accent: var(--color-accent)">
+      <span class="page-card__icon">💬</span>
+      <h2 class="page-card__title">留言广场</h2>
+      <p class="page-card__desc">
+        留下你想说的话，分享生活中的美好瞬间。支持文字图片，数据保存在浏览器中。
+      </p>
+      <span class="page-card__arrow">去看看 →</span>
+    </a>
+
+    <!-- 网站探测 -->
+    <a href="probe/" class="page-card fade-in" style="animation-delay: 0.3s; --accent: var(--color-primary-light)">
+      <span class="page-card__icon">🔍</span>
+      <h2 class="page-card__title">网站探测</h2>
+      <p class="page-card__desc">
+        输入任意网站地址，一键探测连通性并自动抓取网站名称、简介、图标等元数据信息。
+      </p>
+      <span class="page-card__arrow">去看看 →</span>
+    </a>
+
+    <!-- 猫咪乐园 -->
+    <a href="catpark/" class="page-card fade-in" style="animation-delay: 0.4s; --accent: var(--color-accent)">
+      <span class="page-card__icon">🐈</span>
+      <h2 class="page-card__title">猫咪乐园</h2>
+      <p class="page-card__desc">
+        一只可爱的橘猫在温暖的房间里等你——用鼠标和它互动吧！
+      </p>
+      <span class="page-card__arrow">去看看 →</span>
+    </a>
+
+    <!-- 猫图工坊 -->
+    <a href="cat/" class="page-card fade-in" style="animation-delay: 0.5s; --accent: var(--color-primary-light)">
+      <span class="page-card__icon">🐱</span>
+      <h2 class="page-card__title">猫图工坊</h2>
+      <p class="page-card__desc">
+        随机获取可爱猫咪图片，吸猫放松一下——来自 The Cat API。
+      </p>
+      <span class="page-card__arrow">去看看 →</span>
+    </a>
+
+    <!-- 随机笑话 -->
+    <a href="joke/" class="page-card fade-in" style="animation-delay: 0.6s; --accent: var(--color-accent)">
+      <span class="page-card__icon">😂</span>
+      <h2 class="page-card__title">随机笑话</h2>
+      <p class="page-card__desc">
+        一键获取随机中英双语笑话，放松心情——来自 JokeAPI。
+      </p>
+      <span class="page-card__arrow">去看看 →</span>
+    </a>
+
+    <!-- 网站导航 -->
+    <a href="navigation/" class="page-card fade-in" style="animation-delay: 0.7s; --accent: var(--color-primary)">
+      <span class="page-card__icon">🔗</span>
+      <h2 class="page-card__title">网站导航</h2>
+      <p class="page-card__desc">
+        常用网站快捷入口，一键跳转百度、B站、Google、GitHub。
+      </p>
+      <span class="page-card__arrow">去看看 →</span>
+    </a>
+
+    <!-- TMDb Netlify -->
+    <a href="tmdb-netlify/" class="page-card fade-in" style="animation-delay: 0.8s; --accent: var(--color-secondary-light)">
+      <span class="page-card__icon">🎬</span>
+      <h2 class="page-card__title">TMDb 电影(Netlify)</h2>
+      <p class="page-card__desc">
+        通过 Netlify 代理调用 TMDb API，发现热门电影，返回原始 JSON 数据。
+      </p>
+      <span class="page-card__arrow">去看看 →</span>
+    </a>
+
+    <!-- TMDb Vercel -->
+    <a href="tmdb-vercel/" class="page-card fade-in" style="animation-delay: 0.9s; --accent: var(--color-secondary)">
+      <span class="page-card__icon">🎞️</span>
+      <h2 class="page-card__title">TMDb 电影(Vercel)</h2>
+      <p class="page-card__desc">
+        通过 Vercel Serverless 调用 TMDb API，发现热门电影。
+      </p>
+      <span class="page-card__arrow">去看看 →</span>
+    </a>
+
+  </div>
+
+  <!-- ========== 导航组件 ========== -->
+  <script src="web-js/nav.js"></script>
+</body>
+</html>
