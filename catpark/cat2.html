@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>猫咪梦境 · 星光猫绘</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(145deg, #0b0b1f 0%, #151b2e 100%);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+        }
+        svg {
+            width: 90%;
+            height: 90%;
+            visibility: hidden;
+        }
+        #mask {
+            position: absolute;
+            background: rgba(10,10,30,0.95);
+            backdrop-filter: blur(8px);
+            width: 100%;
+            height: 100%;
+            font-size: 6rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            gap: 15px;
+            animation: catPulse 0.8s ease-in-out infinite;
+        }
+        #mask span {
+            font-size: 1.2rem;
+            color: #ffb347;
+            letter-spacing: 3px;
+        }
+        @keyframes catPulse {
+            0%, 100% { transform: scale(1); text-shadow: 0 0 5px #ffb347; }
+            50% { transform: scale(1.02); text-shadow: 0 0 20px #ff8c42; }
+        }
+        #starsCanvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            top: 0;
+            left: 0;
+        }
+        .message-area {
+            position: absolute;
+            bottom: 10%;
+            left: 0;
+            right: 0;
+            text-align: center;
+            z-index: 20;
+            pointer-events: none;
+        }
+        .cat-text {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+            color: #ffe1b9;
+            font-size: 1.3rem;
+            text-shadow: 0 0 10px #f39c12;
+            margin: 6px auto;
+            background: rgba(0,0,0,0.45);
+            display: inline-block;
+            padding: 6px 22px;
+            border-radius: 50px;
+            backdrop-filter: blur(4px);
+            letter-spacing: 1px;
+        }
+        .cat-text.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .hint {
+            position: absolute;
+            bottom: 2%;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 0.7rem;
+            color: rgba(255,215,150,0.6);
+            z-index: 20;
+            pointer-events: none;
+        }
+        .particle {
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="mask">
+    🐱
+    <span>✦ 轻触唤醒 · 猫咪星梦 ✦</span>
+</div>
+<canvas id="starsCanvas"></canvas>
+<div class="message-area" id="messageArea"></div>
+<div class="hint">✨ 点击任意位置 · 猫咪与星光 伴你入梦 ✨</div>
+
+<svg class="mainSVG" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 700">
+    <defs>
+        <!-- 猫咪轮廓主体路径 (用于描边动画) -->
+        <path id="catBodyPath" fill="none" stroke="#FFF" stroke-width="5" d="
+            M 320,480 
+            C 290,445 265,400 275,330
+            C 280,285 300,245 325,215
+            C 350,190 375,180 400,178
+            C 425,180 450,190 475,215
+            C 500,245 520,285 525,330
+            C 535,400 510,445 480,480
+            C 465,500 445,510 420,515
+            L 380,515
+            C 355,510 335,500 320,480 Z
+        " />
+        <!-- 左耳 -->
+        <path id="leftEarPath" fill="none" stroke="#FFF" stroke-width="4" d="M 290,260 L 260,170 L 320,215" />
+        <!-- 右耳 -->
+        <path id="rightEarPath" fill="none" stroke="#FFF" stroke-width="4" d="M 510,260 L 540,170 L 480,215" />
+        <!-- 眼睛 -->
+        <path id="leftEyePath" fill="none" stroke="#FFF" stroke-width="3" d="M 355,295 Q 365,285 375,295" />
+        <path id="rightEyePath" fill="none" stroke="#FFF" stroke-width="3" d="M 425,295 Q 435,285 445,295" />
+        <!-- 鼻子 -->
+        <path id="nosePath" fill="none" stroke="#FFF" stroke-width="3" d="M 396,330 L 404,330 L 400,338 Z" />
+        <!-- 胡须路径组 -->
+        <path id="whiskersPath" fill="none" stroke="#FFF" stroke-width="2.5" d="
+            M 345,320 L 285,312
+            M 345,327 L 278,325
+            M 345,334 L 285,338
+            M 455,320 L 515,312
+            M 455,327 L 522,325
+            M 455,334 L 515,338
+        " />
+        <!-- 尾巴 -->
+        <path id="tailCurve" fill="none" stroke="#FFF" stroke-width="8" d="M 485,480 C 535,465 575,425 580,375 C 585,325 565,305 540,315" />
+
+        <!-- 动态粒子母版 -->
+        <circle id="glowDot" cx="0" cy="0" r="4" />
+        <polygon id="starShape" points="0,-8 2.5,-2.5 8,-2.5 3.5,1.5 5,8 0,4.5 -5,8 -3.5,1.5 -8,-2.5 -2.5,-2.5" />
+        <path id="pawShape" d="M-3,-2 L3,-2 L4,2 L2,5 L-2,5 L-4,2 Z" />
+
+        <radialGradient id="catFill" cx="48%" cy="40%" r="55%">
+            <stop offset="0%" stop-color="#ffe0b5" />
+            <stop offset="65%" stop-color="#f7b05e" />
+            <stop offset="100%" stop-color="#dc8a56" />
+        </radialGradient>
+
+        <radialGradient id="starGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#fff3c9" stop-opacity="1" />
+            <stop offset="50%" stop-color="#ffc96e" stop-opacity="0.6" />
+            <stop offset="100%" stop-color="#ffb347" stop-opacity="0" />
+        </radialGradient>
+    </defs>
+
+    <!-- 猫咪主体 -->
+    <path d="
+        M 320,480 
+        C 290,445 265,400 275,330
+        C 280,285 300,245 325,215
+        C 350,190 375,180 400,178
+        C 425,180 450,190 475,215
+        C 500,245 520,285 525,330
+        C 535,400 510,445 480,480
+        C 465,500 445,510 420,515
+        L 380,515
+        C 355,510 335,500 320,480 Z
+    " fill="url(#catFill)" stroke="#c47a44" stroke-width="2" />
+
+    <!-- 肚皮浅色区域 -->
+    <path d="M 340,360 Q 370,460 400,470 Q 430,460 460,360 Q 400,370 340,360" fill="#fff2e0" opacity="0.55" />
+
+    <!-- 耳朵填充 -->
+    <path d="M 290,260 L 258,170 L 322,218 Z" fill="#f7b05e" stroke="#c47a44" stroke-width="2" />
+    <path d="M 510,260 L 542,170 L 478,218 Z" fill="#f7b05e" stroke="#c47a44" stroke-width="2" />
+    <path d="M 290,252 L 268,186 L 315,220 Z" fill="#ffb7b2" />
+    <path d="M 510,252 L 532,186 L 485,220 Z" fill="#ffb7b2" />
+
+    <!-- 大眼睛 -->
+    <ellipse cx="365" cy="295" rx="20" ry="26" fill="#2d1b0e" />
+    <ellipse cx="435" cy="295" rx="20" ry="26" fill="#2d1b0e" />
+    <ellipse cx="370" cy="288" rx="7" ry="9" fill="white" />
+    <ellipse cx="440" cy="288" rx="7" ry="9" fill="white" />
+    <circle cx="362" cy="292" r="4" fill="#111" />
+    <circle cx="432" cy="292" r="4" fill="#111" />
+    <circle cx="373" cy="283" r="2.5" fill="white" />
+    <circle cx="443" cy="283" r="2.5" fill="white" />
+
+    <!-- 鼻子 -->
+    <path d="M 394,332 L 406,332 L 400,340 Z" fill="#e76f51" stroke="#b94b2a" stroke-width="1" />
+    <!-- 嘴巴弧线 -->
+    <path d="M 400,342 Q 392,352 382,346" stroke="#8b5a2b" stroke-width="2.5" fill="none" stroke-linecap="round" />
+    <path d="M 400,342 Q 408,352 418,346" stroke="#8b5a2b" stroke-width="2.5" fill="none" stroke-linecap="round" />
+
+    <!-- 胡须线条 -->
+    <g class="whiskerGroup" opacity="0.8">
+        <path class="whiskerLine" fill="none" stroke="#ffe1b9" stroke-width="2.2" d="M 345,320 L 280,312" />
+        <path class="whiskerLine" fill="none" stroke="#ffe1b9" stroke-width="2.2" d="M 345,328 L 272,325" />
+        <path class="whiskerLine" fill="none" stroke="#ffe1b9" stroke-width="2.2" d="M 345,336 L 280,340" />
+        <path class="whiskerLine" fill="none" stroke="#ffe1b9" stroke-width="2.2" d="M 455,320 L 520,312" />
+        <path class="whiskerLine" fill="none" stroke="#ffe1b9" stroke-width="2.2" d="M 455,328 L 528,325" />
+        <path class="whiskerLine" fill="none" stroke="#ffe1b9" stroke-width="2.2" d="M 455,336 L 520,340" />
+    </g>
+
+    <!-- 尾巴 -->
+    <path class="tailAnim" fill="none" stroke="#f7b05e" stroke-width="13" stroke-linecap="round" d="M 485,480 C 535,465 575,425 580,375 C 585,325 565,305 540,315" />
+
+    <!-- 运动光点容器（粒子流） -->
+    <g class="pContainer"></g>
+
+    <!-- 闪光母版 -->
+    <circle class="sparkleMaster" fill="url(#starGlow)" cx="0" cy="0" r="22" />
+</svg>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/MotionPathPlugin.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/DrawSVGPlugin.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Physics2DPlugin.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/EasePack.min.js"></script>
+
+<script>
+    (function() {
+        // 注册 GSAP 插件
+        gsap.registerPlugin(MotionPathPlugin, DrawSVGPlugin, Physics2DPlugin);
+        gsap.set(".mainSVG", { visibility: "visible" });
+        gsap.set(".sparkleMaster", { transformOrigin: "50% 50%" });
+
+        // --- 1. 猫咪轮廓描边动画 ---
+        const catTimeline = gsap.timeline({ paused: true });
+
+        catTimeline
+            .from("#catBodyPath", { duration: 3.5, drawSVG: "0% 0%", stroke: "#ffbc7a", ease: "power2.inOut" })
+            .from("#leftEarPath, #rightEarPath", { duration: 1.3, drawSVG: "0% 0%", stroke: "#ffaa66", stagger: 0.2, ease: "back(1)" }, "-=1.8")
+            .from("#leftEyePath, #rightEyePath", { duration: 0.8, drawSVG: "0% 0%", stroke: "#ffeeaa", ease: "elastic(1,0.4)" }, "-=0.7")
+            .from("#nosePath", { duration: 0.5, drawSVG: "0% 0%", stroke: "#ff8866", ease: "bounce.out" }, "-=0.3")
+            .from("#whiskersPath", { duration: 1.6, drawSVG: "0% 0%", stroke: "#ffdead", ease: "power1" }, "-=0.2")
+            .from("#tailCurve", { duration: 2.2, drawSVG: "0% 0%", stroke: "#ffb347", ease: "elastic.out(1,0.4)" }, "-=1.0");
+
+        // --- 2. 活跃姿态 (尾巴/胡须/眨眼) ---
+        function startLiveGestures() {
+            // 尾巴摇摆
+            gsap.to(".tailAnim", {
+                duration: 1.2,
+                rotation: 12,
+                transformOrigin: "90% 88%",
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut"
+            });
+            // 胡须轻微颤动
+            gsap.to(".whiskerLine", {
+                duration: 1.0,
+                rotation: 2.5,
+                transformOrigin: "center",
+                repeat: -1,
+                yoyo: true,
+                stagger: 0.08,
+                ease: "power1"
+            });
+            // 间歇眨眼
+            setInterval(() => {
+                gsap.to(".eyes ellipse", {
+                    duration: 0.1,
+                    scaleY: 0.05,
+                    transformOrigin: "center",
+                    yoyo: true,
+                    repeat: 1,
+                    ease: "none"
+                });
+            }, 4000);
+        }
+
+        // --- 3. 粒子系统 (猫爪/星光/光点) ---
+        const particleColors = ["#FFBF69", "#F4D03F", "#FF9F68", "#E67E22", "#F8C471", "#F7B05E", "#FFB347"];
+        const particleTypes = ["#starShape", "#glowDot", "#pawShape"];
+        let particlePool = [];
+        let particleIdx = 0;
+        const TOTAL_PARTICLES = 180;
+        let particleActive = true;
+
+        function buildParticles() {
+            const svgRoot = document.querySelector(".mainSVG");
+            for (let i = 0; i < TOTAL_PARTICLES; i++) {
+                const type = particleTypes[i % particleTypes.length];
+                let p = document.querySelector(type).cloneNode(true);
+                svgRoot.appendChild(p);
+                p.setAttribute("fill", particleColors[i % particleColors.length]);
+                p.classList.add("particle");
+                gsap.set(p, {
+                    x: -60,
+                    y: -60,
+                    scale: 0.4 + Math.random() * 1.3,
+                    transformOrigin: "50% 50%",
+                    opacity: 0.7
+                });
+                particlePool.push(p);
+            }
+        }
+
+        function flickerGlow(el) {
+            gsap.killTweensOf(el, "opacity");
+            gsap.to(el, {
+                duration: 0.1,
+                opacity: 0.3 + Math.random() * 0.6,
+                repeat: -1,
+                yoyo: true
+            });
+        }
+
+        function launchParticle() {
+            if (!particleActive) return;
+            const p = particlePool[particleIdx % particlePool.length];
+            const posX = gsap.getProperty(".pContainer", "x");
+            const posY = gsap.getProperty(".pContainer", "y");
+            if (isNaN(posX) || isNaN(posY)) return;
+            gsap.set(p, { x: posX, y: posY, scale: 0.5 + Math.random() * 1.6, opacity: 0.9 });
+            gsap.to(p, {
+                duration: 0.8 + Math.random() * 2.4,
+                physics2D: {
+                    velocity: Math.random() * 70 - 35,
+                    angle: Math.random() * 360,
+                    gravity: 15 + Math.random() * 35
+                },
+                scale: 0,
+                opacity: 0,
+                rotation: Math.random() * 400 - 200,
+                ease: "power2.out",
+                onStart: flickerGlow,
+                onStartParams: [p]
+            });
+            particleIdx = (particleIdx + 1) % particlePool.length;
+        }
+
+        // --- 4. 猫咪身体路径（用于光点巡游）---
+        const catPathPoints = [
+            {x: 400, y: 178}, {x: 360, y: 188}, {x: 330, y: 210}, {x: 300, y: 245}, {x: 282, y: 290},
+            {x: 275, y: 330}, {x: 282, y: 370}, {x: 300, y: 415}, {x: 330, y: 455}, {x: 365, y: 485},
+            {x: 400, y: 498}, {x: 435, y: 485}, {x: 470, y: 455}, {x: 500, y: 415}, {x: 518, y: 370},
+            {x: 525, y: 330}, {x: 518, y: 290}, {x: 500, y: 245}, {x: 470, y: 210}, {x: 440, y: 188}, {x: 400, y: 178}
+        ];
+        const pathData = "M " + catPathPoints.map(p => `${p.x} ${p.y}`).join(" L ") + " Z";
+        const motionPathElem = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        motionPathElem.setAttribute("id", "catRoute");
+        motionPathElem.setAttribute("d", pathData);
+        motionPathElem.setAttribute("fill", "none");
+        motionPathElem.setAttribute("stroke", "none");
+        document.querySelector(".mainSVG").appendChild(motionPathElem);
+
+        const particleFlow = gsap.timeline({ paused: true, onUpdate: launchParticle });
+        particleFlow
+            .to(".pContainer, .sparkleMaster", {
+                duration: 7.5,
+                motionPath: { path: "#catRoute", autoRotate: false },
+                ease: "linear"
+            })
+            .to(".sparkleMaster", {
+                duration: 1.2,
+                scale: 1.8,
+                opacity: 0,
+                ease: "power2.in"
+            }, "-=1.2");
+
+        // --- 5. 星空画布背景 ---
+        function initStarfield() {
+            const canvas = document.getElementById("starsCanvas");
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
+            let w = canvas.width = window.innerWidth;
+            let h = canvas.height = window.innerHeight;
+            let stars = [];
+            for (let i = 0; i < 550; i++) {
+                stars.push({
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    r: Math.random() * 2.5 + 0.8,
+                    alpha: Math.random() * 0.8 + 0.2,
+                    speed: 0.002 + Math.random() * 0.008
+                });
+            }
+            function drawStars() {
+                ctx.clearRect(0, 0, w, h);
+                ctx.fillStyle = "#070715";
+                ctx.fillRect(0, 0, w, h);
+                stars.forEach(s => {
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 225, 160, ${s.alpha * 0.85})`;
+                    ctx.fill();
+                    s.alpha += s.speed;
+                    if (s.alpha > 1 || s.alpha < 0.2) s.speed = -s.speed;
+                });
+                requestAnimationFrame(drawStars);
+            }
+            drawStars();
+            window.addEventListener("resize", () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                w = canvas.width;
+                h = canvas.height;
+            });
+        }
+
+        // --- 6. 温情文字渐显 ---
+        const quotes = ["🐾 猫咪的哈欠", "星光坠入胡须", "蜷成月亮船", "梦里全是小鱼干 ✨"];
+        function displayMessages() {
+            const container = document.getElementById("messageArea");
+            if (!container) return;
+            quotes.forEach((text, idx) => {
+                const el = document.createElement("div");
+                el.className = "cat-text";
+                el.innerText = text;
+                container.appendChild(el);
+                setTimeout(() => el.classList.add("show"), idx * 700 + 300);
+            });
+        }
+
+        // --- 7. 全局启动 (点击触发) ---
+        let started = false;
+        const maskDiv = document.getElementById("mask");
+
+        window.onclick = function() {
+            if (started) return;
+            started = true;
+            if (maskDiv) {
+                maskDiv.style.transition = "opacity 0.5s";
+                maskDiv.style.opacity = "0";
+                setTimeout(() => maskDiv.remove(), 500);
+            }
+
+            // 启动所有动画
+            buildParticles();
+            catTimeline.play();
+            particleFlow.play();
+            startLiveGestures();
+            initStarfield();
+            displayMessages();
+            gsap.globalTimeline.timeScale(1.2);
+
+            // 额外尾巴高亮闪过
+            gsap.to(".tailAnim", { duration: 0.5, stroke: "#ffda99", yoyo: true, repeat: 2 });
+        };
+    })();
+</script>
+</body>
+</html>
